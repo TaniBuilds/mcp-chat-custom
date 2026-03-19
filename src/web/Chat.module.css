@@ -8,8 +8,8 @@
 .settingsBar {
   position: sticky;
   top: 0;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #1a1a24;
+  border-bottom: 1px solid #2e2e3e;
   padding: 0.75rem 1rem;
   display: flex;
   justify-content: space-between;
@@ -21,7 +21,7 @@
   display: flex;
   flex-direction: column;
   font-size: 0.9rem;
-  color: #666;
+  color: #8888a8;
 }
 
 .settingsRow {
@@ -35,8 +35,8 @@
 
 .settingsButton {
   background: none;
-  border: 1px solid #007bff;
-  color: #007bff;
+  border: 1px solid #4d9fff;
+  color: #4d9fff;
   padding: 0.25rem 0.75rem;
   border-radius: 4px;
   cursor: pointer;
@@ -45,8 +45,8 @@
 }
 
 .settingsButton:hover {
-  background-color: #007bff;
-  color: white;
+  background-color: #4d9fff;
+  color: #0f0f13;
 }
 
 .messages {
@@ -63,24 +63,24 @@
 }
 
 .userMessage {
-  background-color: #007bff;
-  color: white;
+  background-color: #1e4080;
+  color: #e2e2e8;
   margin-left: auto;
   text-align: right;
   max-width: 35%;
 }
 
 .assistantMessage {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: #22222e;
+  color: #e2e2e8;
 }
 
 .inputForm {
   position: sticky;
   bottom: 0;
-  background-color: white;
+  background-color: #1a1a24;
   padding: 1rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #2e2e3e;
   display: flex;
   gap: 0.5rem;
 }
@@ -88,7 +88,7 @@
 .messageInput {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid #2e2e3e;
   border-radius: 4px;
   resize: none;
   min-height: 80px;
@@ -96,16 +96,23 @@
   font-family: inherit;
   font-size: inherit;
   line-height: 1.5;
+  background-color: #22222e;
+  color: #e2e2e8;
+}
+
+.messageInput::placeholder {
+  color: #8888a8;
 }
 
 .messageInput:disabled {
-  background-color: #f5f5f5;
+  background-color: #181820;
   cursor: not-allowed;
+  color: #8888a8;
 }
 
 .inputForm button {
   padding: 0.5rem 1rem;
-  background-color: #007bff;
+  background-color: #2d7dd2;
   color: white;
   border: none;
   border-radius: 4px;
@@ -114,21 +121,21 @@
 }
 
 .inputForm button:disabled {
-  background-color: #ccc;
+  background-color: #3a3a4a;
   cursor: not-allowed;
 }
 
 .error {
-  color: #dc3545;
+  color: #ff6b6b;
   padding: 1rem;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background-color: #2a1a1a;
+  border: 1px solid #3d2020;
   border-radius: 4px;
   margin: 1rem;
 }
 
 .loading {
-  color: #666;
+  color: #8888a8;
   font-style: italic;
   padding: 0.5rem 1rem;
 }
@@ -139,12 +146,12 @@
 
 .timestamp {
   font-size: 0.8rem;
-  color: #666;
+  color: #8888a8;
   margin-top: 0.75rem;
 }
 
 .toolCall {
-  background-color: #f8f9fa;
+  background-color: #22222e;
   padding: 1.25rem;
   border-radius: 4px;
   margin: 0.75rem 0;
@@ -164,16 +171,17 @@
 .toolInput pre {
   margin: 0;
   padding: 0.75rem;
-  background-color: #fff;
-  border: 1px solid #eee;
+  background-color: #1a1a24;
+  border: 1px solid #2e2e3e;
   border-radius: 4px;
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
+  color: #e2e2e8;
 }
 
 .toolResult {
-  background-color: #b2f2bb;
+  background-color: #1a2e20;
   padding: 1.25rem;
   border-radius: 4px;
   margin: 0.75rem 0;
@@ -187,12 +195,13 @@
 .toolResult pre {
   margin: 0;
   padding: 0.75rem;
-  background-color: #d3f9d8;
-  border: 1px solid #eee;
+  background-color: #1e3828;
+  border: 1px solid #2e4838;
   border-radius: 4px;
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
+  color: #e2e2e8;
 }
 
 .toolInteraction {
@@ -227,4 +236,4 @@
   100% {
     stroke-dashoffset: -60;
   }
-} 
+}

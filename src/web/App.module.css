@@ -6,9 +6,9 @@
 
 .sidebar {
   width: 400px;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #2e2e3e;
   padding: 1rem;
-  background-color: white;
+  background-color: #1a1a24;
   display: flex;
   flex-direction: column;
 }
@@ -17,6 +17,7 @@
   flex: 1;
   height: 100vh;
   overflow-y: auto;
+  background-color: #0f0f13;
 }
 
 .chatsList {
@@ -31,19 +32,20 @@
 
 .chatItem {
   padding: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid #2e2e3e;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
+  color: #e2e2e8;
 }
 
 .chatItem:hover {
-  background-color: #f5f5f5;
+  background-color: #22222e;
 }
 
 .selectedChat {
-  background-color: #e3f2fd;
-  border-color: #2196f3;
+  background-color: #1a2e4a;
+  border-color: #4d9fff;
 }
 
 .chatMeta {
@@ -51,14 +53,14 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.875rem;
-  color: #666;
+  color: #8888a8;
   margin-top: 0.5rem;
 }
 
 .error {
-  color: #d32f2f;
+  color: #ff6b6b;
   padding: 1rem;
-  background-color: #ffebee;
+  background-color: #2a1a1a;
   border-radius: 0.5rem;
   margin-top: 1rem;
 }
@@ -68,7 +70,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #666;
+  color: #8888a8;
   font-size: 1.1rem;
 }
 
@@ -76,12 +78,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #2e2e3e;
   margin-bottom: 1rem;
 }
 
 .newChatButton {
-  background-color: #007bff;
+  background-color: #2d7dd2;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -90,5 +92,5 @@
 }
 
 .newChatButton:hover {
-  background-color: #0056b3;
-} 
+  background-color: #1a6bc5;
+}

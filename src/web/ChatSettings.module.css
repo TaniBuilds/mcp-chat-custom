@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,18 +12,21 @@
 }
 
 .settingsModal {
-  background-color: white;
+  background-color: #1e1e2a;
+  color: #e2e2e8;
   padding: 2rem;
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid #2e2e3e;
 }
 
 .settingsModal h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;
+  color: #e2e2e8;
 }
 
 .formGroup {
@@ -34,15 +37,30 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  color: #c0c0d0;
 }
 
 .formGroup input[type="text"],
 .formGroup textarea {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid #2e2e3e;
   border-radius: 4px;
   font-size: 1rem;
+  background-color: #22222e;
+  color: #e2e2e8;
+  box-sizing: border-box;
+}
+
+.formGroup input[type="text"]::placeholder,
+.formGroup textarea::placeholder {
+  color: #8888a8;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #4d9fff;
 }
 
 .serversList {
@@ -54,15 +72,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem;
-  background-color: #f5f5f5;
+  background-color: #22222e;
   border-radius: 4px;
   margin-bottom: 0.5rem;
+  border: 1px solid #2e2e3e;
 }
 
 .removeButton {
   background: none;
   border: none;
-  color: #dc3545;
+  color: #ff6b6b;
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.5rem;
@@ -93,21 +112,21 @@
 }
 
 .saveButton {
-  background-color: #007bff;
+  background-color: #2d7dd2;
   color: white;
   border: none;
 }
 
 .saveButton:hover {
-  background-color: #0056b3;
+  background-color: #1a6bc5;
 }
 
 .cancelButton {
-  background-color: #6c757d;
-  color: white;
+  background-color: #3a3a4a;
+  color: #e2e2e8;
   border: none;
 }
 
 .cancelButton:hover {
-  background-color: #5a6268;
-} 
+  background-color: #2e2e3e;
+}
