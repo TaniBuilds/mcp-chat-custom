@@ -44,6 +44,26 @@ function App() {
     fetchChats();
   }, [selectedChatId]);
 
+  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(
+        `/api/chat?chatId=${encodeURIComponent(chatId)}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete chat");
+      }
+      const remaining = chats.filter((c) => c.id !== chatId);
+      setChats(remaining);
+      if (selectedChatId === chatId) {
+        setSelectedChatId(remaining.length > 0 ? remaining[0].id : null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete chat");
+    }
+  };
+
   const handleNewChat = async () => {
     try {
       const response = await fetch("/api/chat/create", {
@@ -88,9 +108,18 @@ function App() {
                   }`}
                   onClick={() => setSelectedChatId(chat.id)}
                 >
-                  <h3 style={{ margin: 0 }}>
-                    {chat.title || chat.id.replace(/\.json$/, "")}
-                  </h3>
+                  <div className={styles.chatItemHeader}>
+                    <h3 style={{ margin: 0 }}>
+                      {chat.title || chat.id.replace(/\.json$/, "")}
+                    </h3>
+                    <button
+                      className={styles.deleteChatButton}
+                      onClick={(e) => handleDeleteChat(e, chat.id)}
+                      title="Delete chat"
+                    >
+                      ✕
+                    </button>
+                  </div>
                   <div className={styles.chatMeta}>
                     <span>Model: {chat.model || "Default"}</span>
                     <span>Messages: {chat.messageCount}</span>

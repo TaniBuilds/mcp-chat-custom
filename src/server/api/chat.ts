@@ -40,6 +40,28 @@ export async function getChatHandler(req: Request, res: Response) {
   }
 }
 
+export async function deleteChatHandler(req: Request, res: Response) {
+  try {
+    const { chatId } = req.query;
+    if (!chatId || typeof chatId !== "string") {
+      return res
+        .status(400)
+        .json({ error: "chatId query parameter is required" });
+    }
+
+    const chatsDir = path.join(os.homedir(), ".mcpchat", "chats");
+    const chatPath = path.join(chatsDir, chatId);
+
+    await fs.unlink(chatPath);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting chat:", error);
+    res.status(500).json({ error: "Failed to delete chat" });
+  }
+}
+
 export default {
   get: getChatHandler,
+  delete: deleteChatHandler,
 };
