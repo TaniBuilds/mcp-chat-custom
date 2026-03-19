@@ -24,11 +24,29 @@ export async function postCreateHandler(req: Request, res: Response) {
     const chatId = `chat-${index}-${timestamp}.json`;
     const chatPath = path.join(chatsDir, chatId);
 
+    // Inherit servers and headers from the source chat if provided
+    const { fromChatId } = req.body;
+    let inheritedServers: string[] | undefined;
+    let inheritedHeaders: Record<string, string> | undefined;
+
+    if (fromChatId) {
+      try {
+        const sourceContent = await fs.readFile(path.join(chatsDir, fromChatId), "utf-8");
+        const sourceChat = JSON.parse(sourceContent) as ChatFileFormat;
+        inheritedServers = sourceChat.settings?.servers;
+        inheritedHeaders = sourceChat.settings?.headers;
+      } catch {
+        // If source chat can't be read, proceed without inheriting
+      }
+    }
+
     // Create initial chat data
     const chatData: ChatFileFormat = {
       title: `Chat ${index} - ${new Date(timestamp).toLocaleString()}`,
       settings: {
         model: DEFAULT_MODEL,
+        ...(inheritedServers?.length ? { servers: inheritedServers } : {}),
+        ...(inheritedHeaders && Object.keys(inheritedHeaders).length ? { headers: inheritedHeaders } : {}),
       },
       messages: [],
     };
