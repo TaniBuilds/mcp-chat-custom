@@ -74,6 +74,7 @@ export function setupProgram(argv?: readonly string[]): ProgramOptions {
   const program = new Command();
 
   const servers: string[] = [];
+  const headers: string[] = [];
   program
     .name("mcp-chat")
     .description(
@@ -91,6 +92,14 @@ export function setupProgram(argv?: readonly string[]): ProgramOptions {
       (val: string) => {
         servers.push(val);
         return servers;
+      }
+    )
+    .option(
+      "-H, --header <header>",
+      'Add a custom HTTP header for SSE MCP servers (e.g. "X-MCP-Profile: lighter")',
+      (val: string) => {
+        headers.push(val);
+        return headers;
       }
     )
     .option(
@@ -118,8 +127,24 @@ export function setupProgram(argv?: readonly string[]): ProgramOptions {
 
   const options = program.opts() as ProgramOptions;
   options.server = servers;
+  options.header = headers;
 
   return options;
+}
+
+function parseHeaders(rawHeaders: string[]): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const raw of rawHeaders) {
+    const colonIdx = raw.indexOf(":");
+    if (colonIdx === -1) {
+      console.warn(`Ignoring malformed header (no colon): "${raw}"`);
+      continue;
+    }
+    const name = raw.slice(0, colonIdx).trim();
+    const value = raw.slice(colonIdx + 1).trim();
+    result[name] = value;
+  }
+  return result;
 }
 
 interface ProgramOptions {
@@ -132,6 +157,7 @@ interface ProgramOptions {
   chat?: string;
   system?: string;
   web?: number | boolean;
+  header?: string[];
 }
 
 const options = setupProgram(process.argv);
@@ -145,6 +171,7 @@ async function main() {
     }
 
     let servers = options.server || [];
+    const headers = parseHeaders(options.header || []);
 
     // If configPath is "default" or a specific path is provided, parse it
     if (options.config) {
@@ -162,6 +189,7 @@ async function main() {
         model: options.model,
         chatFile: options.chat,
         systemPrompt: options.system || DEFAULT_SYSTEM_PROMPT,
+        headers,
       });
     } else {
       // Handle single prompt mode
@@ -173,6 +201,7 @@ async function main() {
           prompt: options.prompt,
           chatFile: options.chat,
           systemPrompt: options.system || DEFAULT_SYSTEM_PROMPT,
+          headers,
         });
       }
 

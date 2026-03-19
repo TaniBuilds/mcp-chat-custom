@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+config();
+
 import { Anthropic } from "@anthropic-ai/sdk";
 import {
   MessageParam,
@@ -11,6 +14,8 @@ import {
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import readline from "readline/promises";
 import fs from "fs/promises";
 import path from "path";
@@ -40,17 +45,19 @@ function getChatsDir(): string {
   return path.join(getMCPChatDir(), "chats");
 }
 
-interface ChatOptions {
+export interface ChatOptions {
   servers?: string[];
   model?: string;
   chatFile?: string;
   systemPrompt?: string;
+  headers?: Record<string, string>;
 }
 
 interface ChatSettings {
   model: string;
   systemPrompt?: string;
   servers?: string[];
+  headers?: Record<string, string>;
 }
 
 interface ChatFileFormat {
@@ -62,7 +69,7 @@ interface ChatFileFormat {
 export class MCPClient {
   private mcp: Client;
   private anthropic: Anthropic;
-  private transport: StdioClientTransport | null = null;
+  private transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport | null = null;
   private tools: Tool[] = [];
   private messageHistory: MessageParam[] = [];
   private rl: readline.Interface | null = null;
@@ -71,10 +78,12 @@ export class MCPClient {
   private currentChatTitle: string | null = null;
   public model: string;
   public systemPrompt: string | undefined;
+  private headers: Record<string, string>;
 
   constructor(private options: ChatOptions = {}) {
     this.model = options.model || DEFAULT_MODEL;
     this.systemPrompt = options.systemPrompt;
+    this.headers = options.headers || {};
 
     // Initialize Anthropic client and MCP client
     this.anthropic = new Anthropic({
@@ -138,6 +147,9 @@ export class MCPClient {
         }
         if (!this.options.systemPrompt) {
           this.systemPrompt = chatData.settings.systemPrompt;
+        }
+        if (!this.options.headers && chatData.settings.headers) {
+          this.headers = chatData.settings.headers;
         }
         if (
           !this.options.servers &&
@@ -231,6 +243,7 @@ export class MCPClient {
           model: this.model,
           systemPrompt: this.systemPrompt,
           servers: this.options.servers,
+          headers: Object.keys(this.headers).length > 0 ? this.headers : undefined,
         },
         messages: this.messageHistory,
       };
@@ -247,10 +260,13 @@ export class MCPClient {
     /**
      * Connect to an MCP server
      *
-     * @param serverScriptPath - Path to the server script (.py or .js)
+     * @param serverScriptPath - Path to the server script (.py or .js), or an HTTP/HTTPS URL for SSE servers
      */
     try {
       // Determine script type and appropriate command
+      const isHttp =
+        serverScriptPath.startsWith("http://") ||
+        serverScriptPath.startsWith("https://");
       const isJs = serverScriptPath.endsWith(".js");
       const isPy = serverScriptPath.endsWith(".py");
       const isDocker = serverScriptPath.includes("docker");
@@ -268,6 +284,53 @@ export class MCPClient {
         this.transport = null;
       }
 
+      if (isHttp) {
+        const extraHeaders = this.headers;
+        const hasHeaders = Object.keys(extraHeaders).length > 0;
+        const requestInit: RequestInit | undefined = hasHeaders ? { headers: extraHeaders } : undefined;
+        console.log(`[connectToServer] HTTP server=${serverScriptPath} hasHeaders=${hasHeaders}`, hasHeaders ? extraHeaders : "");
+
+        // Try Streamable HTTP (new protocol) first, fall back to legacy SSE
+        let connected = false;
+        try {
+          console.log(`[connectToServer] trying StreamableHTTP...`);
+          this.transport = new StreamableHTTPClientTransport(new URL(serverScriptPath), requestInit ? { requestInit } : undefined);
+          await this.mcp.connect(this.transport);
+          connected = true;
+          console.log(`[connectToServer] connected via StreamableHTTP`);
+        } catch (streamableErr) {
+          console.log(`[connectToServer] StreamableHTTP failed, falling back to SSE:`, streamableErr);
+          this.mcp = new Client({ name: "mcp-client-cli", version: "1.0.0" });
+          const sseOpts = hasHeaders
+            ? {
+                eventSourceInit: {
+                  fetch: (url: string | URL, init?: RequestInit) =>
+                    fetch(url, { ...init, headers: { ...init?.headers as Record<string, string>, ...extraHeaders } }),
+                },
+                requestInit: { headers: extraHeaders },
+              }
+            : undefined;
+          this.transport = new SSEClientTransport(new URL(serverScriptPath), sseOpts);
+          await this.mcp.connect(this.transport);
+          connected = true;
+          console.log(`[connectToServer] connected via SSE`);
+        }
+
+        if (connected) {
+          const toolsResult = await this.mcp.listTools();
+          this.tools = toolsResult.tools.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            input_schema: tool.inputSchema,
+          }));
+          console.log(
+            `Connected to HTTP server "${serverScriptPath}" with tools:`,
+            this.tools.map(({ name }) => name)
+          );
+        }
+        return;
+      }
+
       if (isNpx) {
         const allArgs = serverScriptPath.split(" ");
         const command = allArgs[0];
@@ -280,7 +343,7 @@ export class MCPClient {
           args,
           env: { ...process.env } as Record<string, string>,
         });
-        this.mcp.connect(this.transport);
+        await this.mcp.connect(this.transport);
         serverWithoutCommand = args.join(" ");
       } else if (isUvx) {
         const allArgs = serverScriptPath.split(" ");
@@ -294,7 +357,7 @@ export class MCPClient {
           args,
           env: { ...process.env } as Record<string, string>,
         });
-        this.mcp.connect(this.transport);
+        await this.mcp.connect(this.transport);
         serverWithoutCommand = args.join(" ");
       } else if (isDocker) {
         const allArgs = serverScriptPath.split(" ");
@@ -308,7 +371,7 @@ export class MCPClient {
           args,
           env: { ...process.env } as Record<string, string>,
         });
-        this.mcp.connect(this.transport);
+        await this.mcp.connect(this.transport);
         serverWithoutCommand = args.join(" ");
       } else {
         if (!isJs && !isPy) {
@@ -343,7 +406,7 @@ export class MCPClient {
           args,
           env: { ...process.env } as Record<string, string>,
         });
-        this.mcp.connect(this.transport);
+        await this.mcp.connect(this.transport);
       }
 
       // List available tools
@@ -507,8 +570,12 @@ export class MCPClient {
   }
 
   private async createAndRunRequest(onToken: (token: string) => void) {
+    const headerCount = Object.keys(this.headers).length;
+    console.log(`[createAndRunRequest] calling Anthropic API model=${this.model} messages=${this.messageHistory.length} tools=${this.tools.length} mcp-headers=${headerCount > 0 ? JSON.stringify(this.headers) : "none"}`);
     const stream = await this.createRequest(true);
+    console.log(`[createAndRunRequest] stream started`);
     await this.handleStreamResponse(stream, onToken);
+    console.log(`[createAndRunRequest] stream complete`);
   }
 
   private async handleSpecialCommand(message: string): Promise<boolean> {

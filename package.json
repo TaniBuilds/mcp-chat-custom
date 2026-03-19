@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "@modelcontextprotocol/sdk": "^1.7.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "body-parser": "^2.1.0",
     "commander": "^14.0.0",
     "cookie-parser": "^1.4.7",
@@ -61,10 +61,10 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "4.3.4",
+    "prettier": "3.6.2",
     "shx": "^0.3.4",
     "tsx": "4.19.3",
     "typescript": "^5.8.3",
-    "prettier": "3.6.2",
     "vite": "6.2.7",
     "vitest": "2.1.9"
   }

@@ -3,6 +3,7 @@ export interface ChatSettings {
   model: string;
   systemPrompt?: string;
   servers?: string[];
+  headers?: Record<string, string>;
 }
 
 export interface Message {

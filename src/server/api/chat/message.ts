@@ -50,18 +50,23 @@ export async function postMessageHandler(req: Request, res: Response) {
     let mcpClient: MCPClient | null = null;
     let disableServers = false;
 
+    console.log(`[message] chatId=${chatId} model=${chatData.settings?.model} servers=${JSON.stringify(chatData.settings?.servers)} headers=${JSON.stringify(chatData.settings?.headers)}`);
+
     try {
       mcpClient = new MCPClient({
         model: chatData.settings?.model,
         systemPrompt: chatData.settings?.systemPrompt,
         servers: chatData.settings?.servers || [],
+        headers: chatData.settings?.headers,
       });
 
       // Connect to servers if specified
       if (chatData.settings?.servers?.length) {
         for (const server of chatData.settings.servers) {
+          console.log(`[message] connecting to server: ${server}`);
           try {
             await mcpClient.connectToServer(server);
+            console.log(`[message] connected to server: ${server}`);
           } catch (err) {
             console.warn(`Failed to connect to server ${server}:`, err);
             console.warn(
@@ -73,6 +78,7 @@ export async function postMessageHandler(req: Request, res: Response) {
               model: chatData.settings?.model,
               systemPrompt: chatData.settings?.systemPrompt,
               servers: [],
+              headers: chatData.settings?.headers,
             });
             disableServers = true;
             break;
@@ -81,15 +87,18 @@ export async function postMessageHandler(req: Request, res: Response) {
       }
 
       // Load the chat history into the MCP client
+      console.log(`[message] loading chat file, disableServers=${disableServers}`);
       await mcpClient.loadChatFile(chatPath, false, disableServers);
 
       // Process the message and get response with streaming
+      console.log(`[message] processing query: "${content}"`);
       await mcpClient.processQueryStream(content, async (token) => {
         // Send each token as an SSE event
         res.write(
           `data: ${JSON.stringify({ type: "token", content: token })}\n\n`
         );
       });
+      console.log(`[message] query complete`);
 
       // Save the updated chat file with all messages
       await mcpClient.saveChatFile();

@@ -17,6 +17,8 @@ export function ChatSettings({
 }: ChatSettingsProps) {
   const [settings, setSettings] = useState<ChatSettingsType>(initialSettings);
   const [newServer, setNewServer] = useState("");
+  const [newHeaderKey, setNewHeaderKey] = useState("");
+  const [newHeaderValue, setNewHeaderValue] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,6 +61,32 @@ export function ChatSettings({
       ...prev,
       servers: prev.servers?.filter((_, i) => i !== index),
     }));
+  };
+
+  const addHeader = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (newHeaderKey.trim()) {
+      const newSettings = {
+        ...settings,
+        headers: {
+          ...(settings.headers || {}),
+          [newHeaderKey.trim()]: newHeaderValue.trim(),
+        },
+      };
+      setSettings(newSettings);
+      setNewHeaderKey("");
+      setNewHeaderValue("");
+      onSave(newSettings, true);
+    }
+  };
+
+  const removeHeader = (key: string) => {
+    setSettings((prev) => {
+      const updated = { ...(prev.headers || {}) };
+      delete updated[key];
+      return { ...prev, headers: updated };
+    });
   };
 
   return (
@@ -140,6 +168,55 @@ export function ChatSettings({
               />
               <button type="button" onClick={addServer}>
                 Add Server
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>HTTP Headers (for SSE servers):</label>
+            <div className={styles.serversList}>
+              {Object.entries(settings.headers || {}).map(([key, value]) => (
+                <div key={key} className={styles.serverItem}>
+                  <span>{key}: {value}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeHeader(key)}
+                    className={styles.removeButton}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className={styles.addServer}>
+              <input
+                type="text"
+                value={newHeaderKey}
+                onChange={(e) => setNewHeaderKey(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addHeader();
+                  }
+                }}
+                placeholder="Header name"
+              />
+              <input
+                type="text"
+                value={newHeaderValue}
+                onChange={(e) => setNewHeaderValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addHeader();
+                  }
+                }}
+                placeholder="Header value"
+              />
+              <button type="button" onClick={addHeader}>
+                Add Header
               </button>
             </div>
           </div>
